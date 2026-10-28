@@ -261,6 +261,9 @@ class User(Base, CreatedAtUTCMixin):
         uselist=False, back_populates="user", cascade="all, delete-orphan", init=False
     )
     hwids: Mapped[list[UserHWID]] = relationship(back_populates="user", cascade="all, delete-orphan", init=False)
+    site_limits: Mapped[list[UserSiteLimit]] = relationship(
+        back_populates="user", cascade="all, delete-orphan", init=False
+    )
     groups: Mapped[list[Group]] = relationship(secondary=users_groups_association, back_populates="users", init=False)
     proxy_settings: Mapped[dict[str, Any]] = mapped_column(
         JSON(True), server_default=text("'{}'"), default_factory=dict
@@ -493,6 +496,26 @@ class UserHWID(Base, CreatedAtUTCMixin):
     os_version: Mapped[str | None] = mapped_column(String(128), default=None)
     device_model: Mapped[str | None] = mapped_column(String(256), default=None)
     last_used_at: Mapped[dt] = mapped_column(DateTime(timezone=True), default_factory=lambda: dt.now(UTC), init=False)
+
+
+class UserSiteLimit(Base, CreatedAtUTCMixin):
+    """Per-user quota for a group of sites: full speed until ``quota`` bytes, then ``slow_speed``.
+
+    Usage resets every day at 00:00 (``SITE_LIMIT_TIMEZONE``); rows with ``expire_at`` are removed then.
+    """
+
+    __tablename__ = "user_site_limits"
+    __table_args__ = (Index("ix_user_site_limits_user_id", "user_id"),)
+    user_id: Mapped[int] = fk_id_column("users.id", ondelete="CASCADE")
+    user: Mapped[User] = relationship(back_populates="site_limits", init=False)
+    name: Mapped[str] = mapped_column(String(64))
+    domains: Mapped[list[str]] = mapped_column(JSON, default_factory=list)
+    quota: Mapped[int] = mapped_column(BigInteger, default=0)
+    slow_speed: Mapped[int] = mapped_column(BigInteger, default=0)
+    used_traffic: Mapped[int] = mapped_column(BigInteger, default=0, server_default="0")
+    throttled: Mapped[bool] = mapped_column(default=False, server_default="0")
+    expire_at: Mapped[dt | None] = mapped_column(DateTime(timezone=True), default=None)
+    reset_at: Mapped[dt] = mapped_column(DateTime(timezone=True), default_factory=lambda: dt.now(UTC))
 
 
 template_group_association = Table(

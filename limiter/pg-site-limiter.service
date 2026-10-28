@@ -1,0 +1,14 @@
+[Unit]
+Description=PasarGuard site limiter (per-limit SOCKS5 throttling proxy)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/local/bin/pg-site-limiter -listen 127.0.0.1:10808
+Restart=always
+RestartSec=2
+DynamicUser=yes
+LimitNOFILE=1048576
+
+[Install]
+WantedBy=multi-user.target

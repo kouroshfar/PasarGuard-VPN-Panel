@@ -14,6 +14,7 @@ from . import (
     passkey,
     settings,
     setup,
+    site_limit,
     subscription,
     system,
     user,
@@ -39,6 +40,7 @@ routers = [
     subscription.router,
     user_template.router,
     hwid.router,
+    site_limit.router,
     passkey.router,
 ]
 

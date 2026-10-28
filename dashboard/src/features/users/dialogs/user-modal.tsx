@@ -5,6 +5,7 @@ import { TimeUnitSelect, TIME_UNIT_SECONDS, type TimeUnit } from '@/components/c
 import UsageModal from '@/features/users/dialogs/usage-modal.lazy'
 import UserAllIPsModal from '@/features/users/dialogs/user-all-ips-modal'
 import { UserHwidsModal } from '@/features/users/dialogs/user-hwids-modal'
+import { UserSiteLimitsModal } from '@/features/users/dialogs/user-site-limits-modal'
 import { UserSubscriptionClientsModal } from '@/features/users/dialogs/user-subscription-clients-modal'
 import { type UseEditFormValues, type UseFormValues, userCreateObjectSchema, userCreateSchema, userEditObjectSchema, userEditSchema } from '@/features/users/forms/user-form'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
@@ -53,6 +54,7 @@ import {
   ChevronDown,
   EllipsisVertical,
   Fingerprint,
+  Gauge,
   Info,
   Layers,
   Link2Off,
@@ -351,6 +353,7 @@ function UserModal({ isDialogOpen, onOpenChange, form, editingUser, editingUserI
   const [isUserAllIPsModalOpen, setUserAllIPsModalOpen] = useState(false)
   const [isUsageModalOpen, setUsageModalOpen] = useState(false)
   const [isHwidsModalOpen, setHwidsModalOpen] = useState(false)
+  const [isSiteLimitsModalOpen, setSiteLimitsModalOpen] = useState(false)
   const [isSubscriptionClientsModalOpen, setSubscriptionClientsModalOpen] = useState(false)
   const [isActionsMenuOpen, setActionsMenuOpen] = useState(false)
   const [onHoldExpireUnit, setOnHoldExpireUnit] = useState<TimeUnit>('days')
@@ -2395,6 +2398,15 @@ function UserModal({ isDialogOpen, onOpenChange, form, editingUser, editingUserI
                     <DropdownMenuItem
                       onSelect={() => {
                         setActionsMenuOpen(false)
+                        setSiteLimitsModalOpen(true)
+                      }}
+                    >
+                      <Gauge className="mr-2 h-4 w-4" />
+                      <span>{t('siteLimits.title', { defaultValue: 'Site limits' })}</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onSelect={() => {
+                        setActionsMenuOpen(false)
                         setRevokeSubDialogOpen(true)
                       }}
                     >
@@ -2528,6 +2540,7 @@ function UserModal({ isDialogOpen, onOpenChange, form, editingUser, editingUserI
       )}
       {currentUserId && <UsageModal open={isUsageModalOpen} onClose={() => setUsageModalOpen(false)} userId={currentUserId} />}
       {currentUserId && <UserHwidsModal isOpen={isHwidsModalOpen} onOpenChange={setHwidsModalOpen} userId={currentUserId} username={currentUsername} />}
+      {currentUserId && <UserSiteLimitsModal isOpen={isSiteLimitsModalOpen} onOpenChange={setSiteLimitsModalOpen} userId={currentUserId} username={currentUsername} />}
       {currentUserId && <UserSubscriptionClientsModal isOpen={isSubscriptionClientsModalOpen} onOpenChange={setSubscriptionClientsModalOpen} userId={currentUserId} username={currentUsername} />}
     </Dialog>
   )

@@ -5,7 +5,7 @@ import useDirDetection from '@/hooks/use-dir-detection'
 import { type UseEditFormValues } from '@/features/users/forms/user-form'
 import { useActiveNextPlanById, useGetCurrentAdmin, useRemoveUserById, useResetUserDataUsageById, useRevokeUserSubscriptionById, UserResponse } from '@/service/api'
 import { useQueryClient } from '@tanstack/react-query'
-import { Cat, Check, Copy, EllipsisVertical, Fingerprint, GlobeLock, Hash, Link2Off, ListStart, ListTree, Network, Pencil, PieChart, QrCode, RefreshCcw, Trash2, UserCog, Users } from 'lucide-react'
+import { Cat, Check, Copy, EllipsisVertical, Fingerprint, Gauge, GlobeLock, Hash, Link2Off, ListStart, ListTree, Network, Pencil, PieChart, QrCode, RefreshCcw, Trash2, UserCog, Users } from 'lucide-react'
 import { WireguardIcon, XrayIcon, SingboxIcon, MihomoIcon } from '@/components/icons/format-icons'
 import { Code } from 'lucide-react'
 import { FC, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
@@ -20,6 +20,7 @@ import SetOwnerModal from '@/features/users/dialogs/set-owner-modal'
 import UsageModal from '@/features/users/dialogs/usage-modal.lazy'
 import UserModal from '@/features/users/dialogs/user-modal.lazy'
 import { UserHwidsModal } from '@/features/users/dialogs/user-hwids-modal'
+import { UserSiteLimitsModal } from '@/features/users/dialogs/user-site-limits-modal'
 import { UserSubscriptionClientsModal } from '@/features/users/dialogs/user-subscription-clients-modal'
 import UserAllIPsModal from '@/features/users/dialogs/user-all-ips-modal'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -53,6 +54,7 @@ type ActionButtonsModalState = {
   isActiveNextPlanModalOpen: boolean
   isSubscriptionClientsModalOpen: boolean
   isHwidsModalOpen: boolean
+  isSiteLimitsModalOpen: boolean
   isUserAllIPsModalOpen: boolean
 }
 
@@ -76,6 +78,7 @@ const createDefaultModalState = (user: UserResponse): ActionButtonsModalState =>
   isActiveNextPlanModalOpen: false,
   isSubscriptionClientsModalOpen: false,
   isHwidsModalOpen: false,
+  isSiteLimitsModalOpen: false,
   isUserAllIPsModalOpen: false,
 })
 
@@ -101,6 +104,7 @@ const hasOpenModal = (state: ActionButtonsModalState) =>
   state.isActiveNextPlanModalOpen ||
   state.isSubscriptionClientsModalOpen ||
   state.isHwidsModalOpen ||
+  state.isSiteLimitsModalOpen ||
   state.isUserAllIPsModalOpen
 
 const notifyGlobalListeners = () => {
@@ -254,6 +258,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user, isModalHost = true, rende
     isActiveNextPlanModalOpen,
     isSubscriptionClientsModalOpen,
     isHwidsModalOpen,
+    isSiteLimitsModalOpen,
     isUserAllIPsModalOpen,
   } = modalState
 
@@ -267,6 +272,7 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user, isModalHost = true, rende
   const setIsActiveNextPlanModalOpen = useCallback((value: boolean) => setModalState({ isActiveNextPlanModalOpen: value }), [setModalState])
   const setSubscriptionClientsModalOpen = useCallback((value: boolean) => setModalState({ isSubscriptionClientsModalOpen: value }), [setModalState])
   const setHwidsModalOpen = useCallback((value: boolean) => setModalState({ isHwidsModalOpen: value }), [setModalState])
+  const setSiteLimitsModalOpen = useCallback((value: boolean) => setModalState({ isSiteLimitsModalOpen: value }), [setModalState])
   const setUserAllIPsModalOpen = useCallback((value: boolean) => setModalState({ isUserAllIPsModalOpen: value }), [setModalState])
 
   useEffect(() => {
@@ -755,6 +761,11 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user, isModalHost = true, rende
                 <span>{t('hwids.title', { defaultValue: 'Hardware IDs' })}</span>
               </DropdownMenuItem>
 
+              <DropdownMenuItem onSelect={() => setSiteLimitsModalOpen(true)}>
+                <Gauge className="mr-2 h-4 w-4" />
+                <span>{t('siteLimits.title', { defaultValue: 'Site limits' })}</span>
+              </DropdownMenuItem>
+
               {canReadAllUsers && (
                 <DropdownMenuItem onSelect={() => setUserAllIPsModalOpen(true)}>
                   <Network className="mr-2 h-4 w-4" />
@@ -866,6 +877,8 @@ const ActionButtons: FC<ActionButtonsProps> = ({ user, isModalHost = true, rende
           <UserSubscriptionClientsModal isOpen={isSubscriptionClientsModalOpen} onOpenChange={setSubscriptionClientsModalOpen} userId={user.id} username={user.username} />
 
           <UserHwidsModal isOpen={isHwidsModalOpen} onOpenChange={setHwidsModalOpen} userId={user.id} username={user.username} />
+
+          <UserSiteLimitsModal isOpen={isSiteLimitsModalOpen} onOpenChange={setSiteLimitsModalOpen} userId={user.id} username={user.username} />
 
           {canReadAllUsers && <UserAllIPsModal isOpen={isUserAllIPsModalOpen} onOpenChange={setUserAllIPsModalOpen} userId={user.id} username={user.username} />}
         </div>

@@ -10,6 +10,7 @@ from PasarGuardNodeBridge.storage import LifecycleStatus
 from sqlalchemy.exc import IntegrityError
 
 from app import notification
+from app.core import site_limits
 from app.core.manager import core_manager
 from app.db import AsyncSession, GetDB
 from app.db.crud.node import (
@@ -376,8 +377,11 @@ class NodeOperation(BaseOperation):
             batch_wireguard_users = (
                 backend_type == service.BackendType.WIREGUARD and len(users) >= WIREGUARD_BATCHED_START_THRESHOLD
             )
+            config = core.to_str()
+            if core.type == CoreType.xray:
+                config = await site_limits.apply_to_config(config)
             start_kwargs = {
-                "config": core.to_str(),
+                "config": config,
                 "backend_type": backend_type,
                 # Starting WireGuard with thousands of peers makes the lifecycle RPC
                 # exceed its short timeout. Bring up the interface first, then apply

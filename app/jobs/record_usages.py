@@ -15,6 +15,7 @@ from sqlalchemy.exc import DatabaseError, DataError, IntegrityError, Operational
 from sqlalchemy.sql.expression import Insert
 
 from app import on_shutdown, scheduler
+from app.core import site_limits
 from app.db import GetDB
 from app.db.base import engine
 from app.db.models import Admin, Node, NodeUsage, NodeUserUsage, System, User
@@ -843,7 +844,9 @@ async def get_users_stats(node: PasarGuardNode, node_id: int | None = None):
 def _process_outbounds_stats_response(stats_response):
     """Fold outbound uplink/downlink stats into per-row params."""
     params = [
-        {"up": stat.value, "down": 0} if stat.type == "uplink" else {"up": 0, "down": stat.value}
+        {"name": stat.name, "up": stat.value, "down": 0}
+        if stat.type == "uplink"
+        else {"name": stat.name, "up": 0, "down": stat.value}
         for stat in filter(attrgetter("value"), stats_response.stats)
     ]
     return params
@@ -1072,6 +1075,8 @@ async def _record_node_usages_impl():
                 api_params[node_id] = []
             else:
                 api_params[node_id] = result
+
+        await site_limits.record_usages(api_params)
 
         # Calculate per-node totals
         node_totals = {

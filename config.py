@@ -226,6 +226,22 @@ class JobSettings(EnvSettings):
     )
 
 
+class SiteLimitSettings(EnvSettings):
+    # Day boundary for the daily usage reset of site limits ("Asia/Tehran", "UTC", ...).
+    timezone: str = Field(default="UTC", validation_alias="SITE_LIMIT_TIMEZONE")
+    # Throttling proxy (pg-site-limiter) as seen from each node.
+    limiter_address: str = Field(default="127.0.0.1", validation_alias="SITE_LIMITER_ADDRESS")
+    limiter_port: int = Field(default=10808, ge=1, le=65535, validation_alias="SITE_LIMITER_PORT")
+
+    @field_validator("timezone")
+    @classmethod
+    def validate_timezone(cls, value: str) -> str:
+        from zoneinfo import ZoneInfo
+
+        ZoneInfo(value)
+        return value
+
+
 class FeatureSettings(EnvSettings):
     stop_nodes_on_shutdown: bool = Field(default=True, validation_alias="STOP_NODES_ON_SHUTDOWN")
 
@@ -245,6 +261,7 @@ auth_settings = AuthSettings()
 usage_settings = UsageSettings()
 job_settings = JobSettings()
 feature_settings = FeatureSettings()
+site_limit_settings = SiteLimitSettings()
 
 if not database_settings.is_postgresql:
     usage_settings.enable_recording_nodes_stats = False
